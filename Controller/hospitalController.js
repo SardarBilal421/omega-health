@@ -99,19 +99,22 @@ exports.getAllHospital = catchAsync(async (req, res, next) => {
 });
 
 exports.getOneHospital = catchAsync(async (req, res, next) => {
+  let dep;
   const hospital = await Hospital.findById(req.params.id).populate(
     "department"
   );
-
+  // .select((dep = await Department.find({ hospital: req.params.id })));
+  dep = await Department.find({ hospital: req.params.id });
   // hospital.map((el) => console.log(el.department));
 
-  if (!hospital) {
+  if (!hospital && !dep) {
     return next(new appError("No doc found by this ID", 404));
   }
   res.status(200).json({
     status: "success",
     data: {
       hospital,
+      dep,
     },
   });
 });

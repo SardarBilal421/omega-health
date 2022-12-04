@@ -82,6 +82,9 @@ exports.getById = catchAsync(async (req, res, next) => {
       path: "hospital",
       select: "-__v",
     });
+
+  doc = await Department.find({ doctor: req.params.id });
+
   if (!dep) {
     return next(new appError("No dep found by this ID", 404));
   }
@@ -89,6 +92,7 @@ exports.getById = catchAsync(async (req, res, next) => {
     status: "success",
     data: {
       data: dep,
+      doc,
     },
   });
 });
