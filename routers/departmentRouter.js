@@ -5,12 +5,12 @@ const departmentController = require("./../Controller/departmentController");
 router
   .route("/")
   .get(departmentController.getAllDepartment)
-  .post(departmentController.createOne);
+  .post(userController.protect, departmentController.createOne);
 
 router
   .route("/:id")
   .get(departmentController.getById)
-  .patch(departmentController.updateDepartment)
-  .delete(departmentController.deleteDepartment);
+  .patch(userController.protect, departmentController.updateDepartment)
+  .delete(userController.protect, departmentController.deleteDepartment);
 
 module.exports = router;
