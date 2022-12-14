@@ -10,7 +10,6 @@ exports.getAllDepartment = catchAsync(async (req, res, next) => {
   if (!department) {
     return next(new appError("no record found", 404));
   }
-
   res.status(200).json({
     status: "success",
     data: {
@@ -83,7 +82,7 @@ exports.getById = catchAsync(async (req, res, next) => {
       select: "-__v",
     });
 
-  doc = await Department.find({ doctor: req.params.id });
+  doc = await Doctor.find({ department: req.params.id });
 
   if (!dep) {
     return next(new appError("No dep found by this ID", 404));
@@ -92,7 +91,7 @@ exports.getById = catchAsync(async (req, res, next) => {
     status: "success",
     data: {
       data: dep,
-      doc,
+      doctor:doc,
     },
   });
 });
