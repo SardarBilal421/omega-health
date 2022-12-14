@@ -14,6 +14,7 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/v1/doctor", doctorRouter);
+app.use("/", "Make a requestt.. server is running...");
 app.use("/api/v1/hospital", hospitalRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/dep", departmentRouter);
