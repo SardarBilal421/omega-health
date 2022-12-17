@@ -2,7 +2,7 @@ const express = require("express");
 const Doctor = require("./../model/doctorModel");
 const catchAsync = require("./../utilities/catchAsync");
 const appError = require("./../utilities/appError");
-const app = require("../app");
+const app = require("./../app");
 const multer = require("multer");
 const sharp = require("sharp");
 

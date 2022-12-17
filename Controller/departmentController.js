@@ -1,8 +1,8 @@
 const express = require("express");
-const Department = require("./../model/departmentModel");
-const Doctor = require("./../model/doctorModel");
-const catchAsync = require("./../utilities/catchAsync");
-const appError = require("./../utilities/appError");
+const Department = require("../model/departmentModel");
+const Doctor = require("../model/doctorModel");
+const catchAsync = require("../utilities/catchAsync");
+const appError = require("../utilities/appError");
 
 exports.getAllDepartment = catchAsync(async (req, res, next) => {
   const department = await Department.find();
@@ -91,7 +91,7 @@ exports.getById = catchAsync(async (req, res, next) => {
     status: "success",
     data: {
       data: dep,
-      doctor:doc,
+      doctor: doc,
     },
   });
 });
