@@ -4,22 +4,18 @@ const hospitalController = require("./../Controller/hospitalController");
 router.patch(
   "/imageUpload/:id",
   hospitalController.uploadHospitalPicDir,
-  hospitalController.resizePicture,
   hospitalController.imageUpload
 );
-router
-  .route("/")
-  .get(hospitalController.getAllHospital)
-  .post(
-    hospitalController.uploadHospitalPicDir,
-    hospitalController.resizePicture,
-    hospitalController.addHospital
-  );
+router.route("/").get(hospitalController.getAllHospital).post(
+  hospitalController.uploadHospitalPicDir,
+  // hospitalController.resizePicture,
+  hospitalController.addHospital
+);
 router
   .route("/:id")
   .get(hospitalController.getOneHospital)
   .patch(
-    // hospitalController.uploadHospitalPicDir,
+    hospitalController.uploadHospitalPicDir,
     // hospitalController.resizePicture,
     hospitalController.updateHospital
   )

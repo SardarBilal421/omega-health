@@ -16,7 +16,10 @@ const hospitalSchema = mongoose.Schema(
         ref: "Department",
       },
     ],
-    picture: [Object],
+    picture: {
+      data: Buffer,
+      contentType: String,
+    },
   },
   {
     toJSON: { virtuals: true },

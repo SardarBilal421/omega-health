@@ -14,7 +14,10 @@ const doctorSchema = mongoose.Schema(
       type: String,
       required: [true, "Doctor must need to enter Experinace"],
     },
-    picture: [Object],
+    picture: {
+      data: Buffer,
+      contentType: String,
+    },
     isActive: {
       type: Boolean,
       default: true,
