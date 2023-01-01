@@ -106,16 +106,14 @@ exports.uploadHospitalPicDir = upload.single("picture");
 // });
 
 exports.updateHospital = catchAsync(async (req, res, next) => {
-  console.log(req.file);
-
-  // if (req.file) {
-  //   req.body.picture = req.file.filename;
-  // }
-  //  else {
-  //   return next(new appError("Nass KAPII NIYA", 404));
-  // }
-
-  const hospital = await Hospital.findByIdAndUpdate(req.params.id, req.body);
+  const hospital = await Hospital.findByIdAndUpdate(req.params.id, {
+    name: req.body.name,
+    department: req.body.department,
+    picture: {
+      data: fs.readFileSync("./uploads/" + req.file.filename),
+      contentType: "image/png",
+    },
+  });
 
   if (!hospital) {
     return next(new appError("No doc found by this ID", 404));
@@ -211,6 +209,7 @@ exports.addHospital = catchAsync(async (req, res, next) => {
     },
   });
 });
+
 exports.imageUpload = catchAsync(async (req, res, next) => {
   const hospital1 = await Hospital.findOne({ _id: req.params.id });
   console.log(req.body.picture);

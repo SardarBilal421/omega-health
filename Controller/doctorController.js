@@ -78,14 +78,24 @@ exports.getAllDoctor = catchAsync(async (req, res, next) => {
 });
 
 exports.updateOne = catchAsync(async (req, res, next) => {
-  if (req.file) {
-    req.body.picture = req.file.filename;
-  }
-
-  const doc = await Doctor.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const doc = await Doctor.findByIdAndUpdate(
+    req.params.id,
+    {
+      name: req.body.name,
+      picture: {
+        data: fs.readFileSync("./uploads/" + req.file.filename),
+        contentType: "image/png",
+      },
+      department: req.body.department,
+      experiance: req.body.experiance,
+      qualification: req.body.qualification,
+      hospital: req.body.hospital,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 
   if (!doc) {
     return next(new appError("No doc found by this ID", 404));
