@@ -6,18 +6,9 @@ const Department = require("./../model/departmentModel");
 const Doctor = require("./../model/doctorModel");
 const multer = require("multer");
 const sharp = require("sharp");
+const AWS = require("aws-sdk");
 
 const multerStorage = multer.memoryStorage();
-//   destination: (req, file, cb) => {
-//     cb(null, "public/img/hospital");
-//   },
-//   filename: (req, file, cb) => {
-//     const ext = file.mimetype.split("/")[1];
-//     const filename = `user-${req.params.id}-${Date.now()}.${ext}`;
-//     cb(null, filename);
-//     req.file.filename = filename;
-//   },
-// });
 
 const multerFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image")) {
@@ -32,44 +23,81 @@ const upload = multer({
   fileFilter: multerFilter,
 });
 
-// const upload = multer({ dest: "public/img/hospital" });
 exports.uploadHospitalPicDir = upload.array("picture");
-// exports.uploadHospitalPicDir = upload.fields([
-//   {
-//     name: "picture",
-//     maxCount: 3,
-//   },
-// ]);
 
-exports.resizePicture = catchAsync(async (req, res, next) => {
-  if (!req.files) return next();
+exports.getImage = catchAsync(async (req, res, next) => {
+  const [SPACE_NAME, SPACE_REGION, ACCESS_KEY, SECRET_KEY] = [
+    `omega-health`,
+    "sfo3.digitaloceanspaces.com",
+    "DO004U2MCNCWB8L2JXVV",
+    "VXn0UnQvQEzW1VxL+f3b6dX6WH7rKlnSur/S48okXAc",
+  ];
 
-  //  req.files.filename = `user-${req.params.id}-${Date.now()}.jpeg`;
+  AWS.config.update({
+    accessKeyId: ACCESS_KEY,
+    secretAccessKey: SECRET_KEY,
+  });
+  const spacesEndpoint = new AWS.Endpoint(SPACE_REGION);
+  const s3 = new AWS.S3({
+    endpoint: spacesEndpoint,
+  });
+
+  const params = {
+    Bucket: SPACE_NAME,
+    Key: req.params.pictureName,
+  };
+
+  s3.getObject(params, (err, data) => {
+    if (err) {
+      return res.status(500).json({ error: err });
+    }
+    data.ContentType = "image/jpeg";
+    res.set("Content-Type", data.ContentType);
+    console.log(data.Body);
+    res.send(data.Body);
+  });
+});
+
+exports.saveImage = catchAsync(async (req, res, next) => {
+  const [SPACE_NAME, SPACE_REGION, ACCESS_KEY, SECRET_KEY] = [
+    `omega-health`,
+    "sfo3.digitaloceanspaces.com",
+    "DO004U2MCNCWB8L2JXVV",
+    "VXn0UnQvQEzW1VxL+f3b6dX6WH7rKlnSur/S48okXAc",
+  ];
+
+  AWS.config.update({
+    accessKeyId: ACCESS_KEY,
+    secretAccessKey: SECRET_KEY,
+  });
+  const spacesEndpoint = new AWS.Endpoint(SPACE_REGION);
+  const s3 = new AWS.S3({
+    endpoint: spacesEndpoint,
+  });
+
   req.body.picture = [];
-  await Promise.all(
-    req.files.map(async (file, i) => {
-      const filename = `user-${req.params.id}-${Date.now()}-${1 + i}.jpeg`;
+  req.files.map(async (file, i) => {
+    const filename = `user-hospital-${req.body.name}-${Date.now()}-${
+      1 + i
+    }.jpeg`;
 
-      await sharp(file.buffer)
-        .toFormat("jpeg")
-        .jpeg({ quality: 90 })
-        .toFile(`public/img/hospital/${filename}`);
+    const params = {
+      Bucket: SPACE_NAME,
+      Key: filename,
+      Body: req.files[i].buffer,
+    };
 
-      req.body.picture.push(filename);
-    })
-  );
+    s3.putObject(params, (err, data) => {
+      if (err) {
+        return res.status(500).json({ error: err });
+      }
+    });
+    req.body.picture.push(filename);
+  });
   next();
 });
 
 exports.updateHospital = catchAsync(async (req, res, next) => {
-  console.log(req.file);
-
-  if (req.file) {
-    req.body.picture = req.file.filename;
-  }
-  //  else {
-  //   return next(new appError("Nass KAPII NIYA", 404));
-  // }
   const hospital = await Hospital.findByIdAndUpdate(req.params.id, req.body);
 
   if (!hospital) {
@@ -146,10 +174,6 @@ exports.deleteHospital = catchAsync(async (req, res, next) => {
 });
 
 exports.addHospital = catchAsync(async (req, res, next) => {
-  if (req.file) {
-    req.body.picture = req.file.filename;
-  }
-
   const hospital = await Hospital.create(req.body);
 
   if (!hospital) {
@@ -162,3 +186,27 @@ exports.addHospital = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.imageUpload = catchAsync(async (req, res, next) => {
+  const hospital1 = await Hospital.findById(req.params.id);
+  let respo;
+  if (req.files) {
+    respo = req.body.picture;
+    req.body.picture = req.body.picture.concat(hospital1.picture);
+  }
+
+  const hospital = await Hospital.findByIdAndUpdate(req.params.id, req.body);
+
+  if (!hospital) {
+    return next(new appError("No doc found by this ID", 404));
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      picture: respo || "No image uploaded",
+    },
+  });
+});
+
+// https://omega-health.sfo3.cdn.digitaloceanspaces.com/ doctor/user-hospital-1674301429400-1.jpeg

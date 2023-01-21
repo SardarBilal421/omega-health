@@ -5,6 +5,7 @@ const appError = require("./../utilities/appError");
 const app = require("./../app");
 const multer = require("multer");
 const sharp = require("sharp");
+const AWS = require("aws-sdk");
 
 const multerStorage = multer.memoryStorage();
 
@@ -21,26 +22,75 @@ const upload = multer({
   fileFilter: multerFilter,
 });
 
-// const upload = multer({ dest: "public/img/hospital" });
 exports.uploadDoctorPicDir = upload.array("picture");
 
-exports.resizePicture = catchAsync(async (req, res, next) => {
-  if (!req.files) return next();
+exports.getImage = catchAsync(async (req, res, next) => {
+  const [SPACE_NAME, SPACE_REGION, ACCESS_KEY, SECRET_KEY] = [
+    `omega-health`,
+    "sfo3.digitaloceanspaces.com",
+    "DO004U2MCNCWB8L2JXVV",
+    "VXn0UnQvQEzW1VxL+f3b6dX6WH7rKlnSur/S48okXAc",
+  ];
 
-  //  req.files.filename = `user-${req.params.id}-${Date.now()}.jpeg`;
+  AWS.config.update({
+    accessKeyId: ACCESS_KEY,
+    secretAccessKey: SECRET_KEY,
+  });
+  const spacesEndpoint = new AWS.Endpoint(SPACE_REGION);
+  const s3 = new AWS.S3({
+    endpoint: spacesEndpoint,
+  });
+
+  const params = {
+    Bucket: SPACE_NAME,
+    Key: req.params.pictureName,
+  };
+
+  s3.getObject(params, (err, data) => {
+    if (err) {
+      return res.status(500).json({ error: err });
+    }
+    data.ContentType = "image/jpeg";
+    res.set("Content-Type", data.ContentType);
+    console.log(data.Body);
+    res.send(data.Body);
+  });
+});
+
+exports.saveImage = catchAsync(async (req, res, next) => {
+  const [SPACE_NAME, SPACE_REGION, ACCESS_KEY, SECRET_KEY] = [
+    `omega-health`,
+    "sfo3.digitaloceanspaces.com",
+    "DO004U2MCNCWB8L2JXVV",
+    "VXn0UnQvQEzW1VxL+f3b6dX6WH7rKlnSur/S48okXAc",
+  ];
+
+  AWS.config.update({
+    accessKeyId: ACCESS_KEY,
+    secretAccessKey: SECRET_KEY,
+  });
+  const spacesEndpoint = new AWS.Endpoint(SPACE_REGION);
+  const s3 = new AWS.S3({
+    endpoint: spacesEndpoint,
+  });
+
   req.body.picture = [];
-  await Promise.all(
-    req.files.map(async (file, i) => {
-      const filename = `doctor-${req.params.id}-${Date.now()}-${1 + i}.jpeg`;
+  req.files.map(async (file, i) => {
+    const filename = `user-dcotor-${req.body.name}-${Date.now()}-${1 + i}.jpeg`;
 
-      await sharp(file.buffer)
-        .toFormat("jpeg")
-        .jpeg({ quality: 90 })
-        .toFile(`public/img/doctor/${filename}`);
+    const params = {
+      Bucket: SPACE_NAME,
+      Key: filename,
+      Body: req.files[i].buffer,
+    };
 
-      req.body.picture.push(filename);
-    })
-  );
+    s3.putObject(params, (err, data) => {
+      if (err) {
+        return res.status(500).json({ error: err });
+      }
+    });
+    req.body.picture.push(filename);
+  });
   next();
 });
 
@@ -60,10 +110,6 @@ exports.getAllDoctor = catchAsync(async (req, res, next) => {
 });
 
 exports.updateOne = catchAsync(async (req, res, next) => {
-  if (req.file) {
-    req.body.picture = req.file.filename;
-  }
-
   const doc = await Doctor.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
@@ -81,10 +127,6 @@ exports.updateOne = catchAsync(async (req, res, next) => {
 });
 
 exports.createOne = catchAsync(async (req, res, next) => {
-  if (req.file) {
-    req.body.picture = req.file.filename;
-  }
-
   const doc = await Doctor.create(req.body);
   if (!doc) {
     return next(new appError("No doc found by this ID", 404));
@@ -121,5 +163,25 @@ exports.getOneDoctor = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: doc,
+  });
+});
+
+exports.imageUpload = catchAsync(async (req, res, next) => {
+  const doctor1 = await Doctor.findById(req.params.id);
+  if (req.files) {
+    req.body.picture = req.body.picture.concat(doctor1.picture);
+  }
+
+  const doctor = await Doctor.findByIdAndUpdate(req.params.id, req.body);
+
+  if (!doctor) {
+    return next(new appError("No doc found by this ID", 404));
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      data: doctor,
+    },
   });
 });

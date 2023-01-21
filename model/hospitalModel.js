@@ -5,6 +5,7 @@ const hospitalSchema = mongoose.Schema(
     name: {
       type: String,
       required: [true, "A Hospital must have name"],
+      unique: true,
     },
     isActive: {
       type: Boolean,
