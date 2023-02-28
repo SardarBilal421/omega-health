@@ -1,8 +1,15 @@
 const express = require("express");
+<<<<<<< HEAD
 const Department = require("../model/departmentModel");
 const Doctor = require("../model/doctorModel");
 const catchAsync = require("../utilities/catchAsync");
 const appError = require("../utilities/appError");
+=======
+const Department = require("./../model/departmentModel");
+const Doctor = require("./../model/doctorModel");
+const catchAsync = require("./../utilities/catchAsync");
+const appError = require("./../utilities/appError");
+>>>>>>> origin/main
 
 exports.getAllDepartment = catchAsync(async (req, res, next) => {
   const department = await Department.find();
@@ -91,7 +98,11 @@ exports.getById = catchAsync(async (req, res, next) => {
     status: "success",
     data: {
       data: dep,
+<<<<<<< HEAD
       doctor: doc,
+=======
+      doctor:doc,
+>>>>>>> origin/main
     },
   });
 });

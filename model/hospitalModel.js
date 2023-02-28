@@ -5,7 +5,10 @@ const hospitalSchema = mongoose.Schema(
     name: {
       type: String,
       required: [true, "A Hospital must have name"],
+<<<<<<< HEAD
       unique: true,
+=======
+>>>>>>> origin/main
     },
     isActive: {
       type: Boolean,
@@ -17,7 +20,14 @@ const hospitalSchema = mongoose.Schema(
         ref: "Department",
       },
     ],
+<<<<<<< HEAD
     picture: [String],
+=======
+    picture: {
+      data: Buffer,
+      contentType: String,
+    },
+>>>>>>> origin/main
   },
   {
     toJSON: { virtuals: true },

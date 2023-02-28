@@ -14,7 +14,14 @@ const doctorSchema = mongoose.Schema(
       type: String,
       required: [true, "Doctor must need to enter Experinace"],
     },
+<<<<<<< HEAD
     picture: [String],
+=======
+    picture: {
+      data: Buffer,
+      contentType: String,
+    },
+>>>>>>> origin/main
     isActive: {
       type: Boolean,
       default: true,
