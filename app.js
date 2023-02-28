@@ -21,11 +21,11 @@ router.get("/", (req, res) => {
   });
 });
 
-app.use("/.netlify/functions/api/v1/doctor", doctorRouter);
-app.use("/.netlify/functions/api/v1/hospital", hospitalRouter);
-app.use("/.netlify/functions/api", router);
-app.use("/.netlify/functions/api/v1/user", userRouter);
-app.use("/.netlify/functions/api/v1/dep", departmentRouter);
+app.use("/api/v1/doctor", doctorRouter);
+app.use("/api/v1/hospital", hospitalRouter);
+// app.use("/.netlify/functions/api", router);
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/dep", departmentRouter);
 
 module.exports = app;
 module.exports.handler = serverless(app);
